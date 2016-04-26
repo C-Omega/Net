@@ -33,6 +33,8 @@ module Helpers =
     let _b_uint64 b = System.BitConverter.ToUInt64(b,0)
     let _uint64_b (i:uint64) = System.BitConverter.GetBytes i
     let _uint16_b (i:uint16) = System.BitConverter.GetBytes i
+    let _uint32_b (i:uint32) = System.BitConverter.GetBytes i
+    let _b_uint32 b = System.BitConverter.ToUInt32(b,0)
     let (|Empty|_|) s = if Seq.isEmpty s then Some(Empty) else None
     let (|IsIn|_|) s e = if Seq.contains e s then Some IsIn else None
     let (|IsNotIn|_|) s e = if Seq.contains e s then None else Some IsNotIn
@@ -95,7 +97,7 @@ module Comm =
         let v = new ResizeArray<'a>()
         let s = ref true
         do async{while !s do let x = sr.receive() in lock v (fun() -> v.Add x)}|>Async.Start
-        //interface System.IDisposable with member x.Dispose() = s:=false
+        interface System.IDisposable with member x.Dispose() = s:=false
         member x.TryTake(f:'a->bool) = lock v (fun() ->
             match v.FindIndex(System.Predicate f) with
             | -1 -> None
@@ -370,4 +372,16 @@ module Net =
                     }
                 close = ignore
             }
-    
+
+        let assemblingRPP timeout tryiter bbsr size =
+            let rpp = RPP timeout tryiter
+            let bbsr = rpp.connect(bbsr).sr
+            {
+                send = 
+                    Array.chunkBySize size
+                    >> fun b -> Array.append [|b.Length - 1 |> uint32 |> _uint32_b|] b
+                    >> Array.iter bbsr.send
+                receive = fun () -> 
+                    let h = bbsr.receive()|>_b_uint32|>int
+                    [|for i = 0 to h do yield bbsr.receive()|]|>Array.concat
+            }
