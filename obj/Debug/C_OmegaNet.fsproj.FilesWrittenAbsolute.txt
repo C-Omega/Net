@@ -1,0 +1,5 @@
+/home/harlan/C-Omega/Net/obj/Debug/.NETFramework,Version=v4.0.AssemblyAttribute.fs
+/home/harlan/C-Omega/Net/bin/Debug/C_OmegaNet.dll.mdb
+/home/harlan/C-Omega/Net/bin/Debug/C_OmegaNet.dll
+/home/harlan/C-Omega/Net/obj/Debug/C_OmegaNet.dll
+/home/harlan/C-Omega/Net/obj/Debug/C_OmegaNet.dll.mdb
